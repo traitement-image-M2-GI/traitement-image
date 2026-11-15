@@ -2,7 +2,7 @@
 // Rôle : charger les images, construire les menus à partir du registre (GET /api/traitements),
 // envoyer images + paramètres au serveur (POST /api/traitements/<id>) et afficher le résultat.
 // Aucun traitement d'image n'est fait ici, sauf les conversions de format nécessaires à l'envoi
-// (couleur -> gris quand le traitement attend du gris). Voir README, section « Interface web ».
+// (couleur -> gris quand le traitement attend du gris). Voir DEVELOPPEMENT.md, section « Interface web ».
 
 import {
   chargerFichier, decoderPNM, encoderPNM, versImageData, versGris, versCouleur,
@@ -149,7 +149,7 @@ function afficherListe() {
 
   liste.innerHTML = "";
   if (!etat.traitements.length) {
-    liste.innerHTML = `<div class="liste-vide">Le registre est vide.<br>Déclarez vos traitements dans <code>traitements.json</code> (voir README).</div>`;
+    liste.innerHTML = `<div class="liste-vide">Le registre est vide.<br>Déclarez vos traitements dans <code>traitements.json</code> (voir DEVELOPPEMENT.md).</div>`;
     return;
   }
   if (!visibles.length) {
@@ -217,150 +217,184 @@ function afficherParams() {
   majBoutonAppliquer();
 }
 
+// ---------------------------------------------------------------------
+// Contrôles du formulaire : UNE fabrique par type de paramètre du registre.
+//
+// Une fabrique reçoit :
+//   p       le paramètre tel que déclaré dans traitements.json (nom, label, min, max, options…)
+//   valeur  sa valeur courante
+//   maj     fonction à appeler avec la nouvelle valeur à chaque modification
+//   id      identifiant à donner au champ principal (relié à son <label>)
+// et renvoie { elements: [nœuds DOM], aide?: { texte, mono? }, sansEtiquette?: true }.
+//
+// Ajouter un type de paramètre = ajouter une fabrique ici ET le type côté serveur
+// (voir DEVELOPPEMENT.md, « Ajouter un type de paramètre »).
+// ---------------------------------------------------------------------
+
+const CONTROLES = {
+  int: (p, valeur, maj, id) => controleNombre(p, valeur, maj, id, true),
+  float: (p, valeur, maj, id) => controleNombre(p, valeur, maj, id, false),
+  bool: controleBool,
+  choix: controleChoix,
+  liste: controleListe,
+};
+
+/** Construit le bloc complet d'un paramètre : étiquette + contrôle + texte d'aide. */
 function creerControle(p, valeurs) {
   const bloc = document.createElement("div");
   bloc.className = "param";
-  const idChamp = `param-${p.nom}`;
-  const entete = document.createElement("div");
-  entete.className = "param-entete";
-  entete.innerHTML = `<label for="${idChamp}">${echapper(p.label || p.nom)}</label>`;
-  bloc.appendChild(entete);
+  const id = `param-${p.nom}`;
   const maj = (v) => { valeurs[p.nom] = v; };
 
-  if (p.type === "int" || p.type === "float") {
-    const entier = p.type === "int";
-    const bornes = typeof p.min === "number" && typeof p.max === "number";
-    const ligne = document.createElement("div");
-    ligne.className = "param-ligne";
-    const nombre = document.createElement("input");
-    nombre.type = "number";
-    nombre.id = idChamp;
-    nombre.className = "champ champ-nombre";
-    nombre.value = valeurs[p.nom];
-    nombre.step = p.pas ?? (entier ? 1 : "any");
-    if (typeof p.min === "number") nombre.min = p.min;
-    if (typeof p.max === "number") nombre.max = p.max;
-    nombre.required = true;
+  const fabrique = CONTROLES[p.type];
+  if (!fabrique) {
+    bloc.innerHTML = `<span class="param-aide">Paramètre « ${echapper(p.nom)} » : type « ${echapper(p.type)} » non géré par l'interface.</span>`;
+    return bloc;
+  }
+  const { elements, aide, sansEtiquette } = fabrique(p, valeurs[p.nom], maj, id);
 
-    let curseur = null;
-    if (bornes) {
-      curseur = document.createElement("input");
-      curseur.type = "range";
-      curseur.min = p.min;
-      curseur.max = p.max;
-      curseur.step = p.pas ?? (entier ? 1 : (p.max - p.min) / 100);
-      curseur.value = valeurs[p.nom];
-      curseur.setAttribute("aria-label", p.label || p.nom);
-      const remplir = () => curseur.style.setProperty("--remplissage", `${((curseur.value - p.min) / (p.max - p.min || 1)) * 100}%`);
-      remplir();
-      curseur.addEventListener("input", () => {
-        nombre.value = curseur.value;
-        maj(entier ? parseInt(curseur.value, 10) : parseFloat(curseur.value));
-        remplir();
-      });
-      nombre.addEventListener("input", () => { curseur.value = nombre.value; remplir(); });
-      ligne.appendChild(curseur);
-    }
-    nombre.addEventListener("input", () => {
-      const v = entier ? parseInt(nombre.value, 10) : parseFloat(nombre.value);
-      if (Number.isFinite(v)) maj(v);
-    });
-    ligne.appendChild(nombre);
-    bloc.appendChild(ligne);
-    if (bornes || p.pas) {
-      const aide = document.createElement("span");
-      aide.className = "param-aide mono";
-      aide.textContent = [bornes && `${p.min} … ${p.max}`, p.pas && `pas ${p.pas}`].filter(Boolean).join(" · ");
-      bloc.appendChild(aide);
-    }
-  } else if (p.type === "bool") {
-    bloc.innerHTML = "";
-    const lab = document.createElement("label");
-    lab.className = "interrupteur";
-    lab.innerHTML = `<span>${echapper(p.label || p.nom)}</span>`;
-    const c = document.createElement("input");
-    c.type = "checkbox";
-    c.id = idChamp;
-    c.checked = !!valeurs[p.nom];
-    c.addEventListener("change", () => maj(c.checked));
-    lab.appendChild(c);
-    bloc.appendChild(lab);
-  } else if (p.type === "choix") {
-    const courts = p.options.length <= 4 && p.options.every((o) => o.length <= 14);
-    if (courts) {
-      const groupe = document.createElement("div");
-      groupe.className = "options";
-      groupe.setAttribute("role", "radiogroup");
-      groupe.id = idChamp;
-      for (const o of p.options) {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.textContent = o;
-        b.setAttribute("role", "radio");
-        const activer = () => $$("button", groupe).forEach((x) => {
-          x.classList.toggle("actif", x.textContent === valeurs[p.nom]);
-          x.setAttribute("aria-checked", x.textContent === valeurs[p.nom]);
-        });
-        b.addEventListener("click", () => { maj(o); activer(); });
-        groupe.appendChild(b);
-        activer();
-      }
-      $$("button", groupe).forEach((x) => x.classList.toggle("actif", x.textContent === valeurs[p.nom]));
-      bloc.appendChild(groupe);
-    } else {
-      const s = document.createElement("select");
-      s.className = "champ champ-large";
-      s.id = idChamp;
-      for (const o of p.options) s.add(new Option(o, o, false, o === valeurs[p.nom]));
-      s.addEventListener("change", () => maj(s.value));
-      bloc.appendChild(s);
-    }
-  } else if (p.type === "liste") {
-    const n = p.taille;
-    const cote = n ? Math.round(Math.sqrt(n)) : 0;
-    const valeurActuelle = Array.isArray(valeurs[p.nom]) ? valeurs[p.nom] : String(valeurs[p.nom]).split(/[,;\s]+/).filter(Boolean).map(Number);
-    if (n && cote * cote === n && cote <= 9) {
-      // Taille carrée (9, 25, 49...) : éditeur de matrice, pratique pour les noyaux de convolution
-      const grille = document.createElement("div");
-      grille.className = "matrice";
-      grille.style.setProperty("--n", cote);
-      grille.id = idChamp;
-      const cellules = [];
-      for (let i = 0; i < n; i++) {
-        const c = document.createElement("input");
-        c.type = "number";
-        c.step = "any";
-        c.required = true;
-        c.className = "champ";
-        c.value = valeurActuelle[i] ?? 0;
-        c.setAttribute("aria-label", `${p.label || p.nom} [${Math.floor(i / cote) + 1}, ${(i % cote) + 1}]`);
-        c.addEventListener("input", () => maj(cellules.map((x) => parseFloat(x.value))));
-        cellules.push(c);
-        grille.appendChild(c);
-      }
-      maj(cellules.map((x) => parseFloat(x.value)));
-      bloc.appendChild(grille);
-      const aide = document.createElement("span");
-      aide.className = "param-aide mono";
-      aide.textContent = `matrice ${cote} × ${cote}`;
-      bloc.appendChild(aide);
-    } else {
-      const champ = document.createElement("input");
-      champ.type = "text";
-      champ.id = idChamp;
-      champ.className = "champ champ-large";
-      champ.value = valeurActuelle.join(", ");
-      champ.required = true;
-      champ.pattern = "\\s*-?[0-9.eE+]+(\\s*[,; ]\\s*-?[0-9.eE+]+)*\\s*";
-      champ.addEventListener("input", () => maj(champ.value));
-      bloc.appendChild(champ);
-      const aide = document.createElement("span");
-      aide.className = "param-aide";
-      aide.textContent = `Nombres séparés par des virgules${n ? ` (${n} valeurs)` : ""}.`;
-      bloc.appendChild(aide);
-    }
+  if (!sansEtiquette) {
+    const entete = document.createElement("div");
+    entete.className = "param-entete";
+    entete.innerHTML = `<label for="${id}">${echapper(p.label || p.nom)}</label>`;
+    bloc.appendChild(entete);
+  }
+  bloc.append(...elements);
+  // aide générée par la fabrique (bornes, taille…), puis aide écrite dans le registre (champ "aide")
+  for (const a of [aide, p.aide && { texte: p.aide }]) {
+    if (!a) continue;
+    const span = document.createElement("span");
+    span.className = a.mono ? "param-aide mono" : "param-aide";
+    span.textContent = a.texte;
+    bloc.appendChild(span);
   }
   return bloc;
+}
+
+/** int / float : curseur + champ numérique si min et max sont donnés, champ numérique seul sinon. */
+function controleNombre(p, valeur, maj, id, entier) {
+  const bornes = typeof p.min === "number" && typeof p.max === "number";
+  const lire = (texte) => (entier ? parseInt(texte, 10) : parseFloat(texte));
+  const ligne = document.createElement("div");
+  ligne.className = "param-ligne";
+
+  const nombre = document.createElement("input");
+  nombre.type = "number";
+  nombre.id = id;
+  nombre.className = "champ champ-nombre";
+  nombre.value = valeur;
+  nombre.step = p.pas ?? (entier ? 1 : "any");
+  if (typeof p.min === "number") nombre.min = p.min;
+  if (typeof p.max === "number") nombre.max = p.max;
+  nombre.required = true;
+
+  if (bornes) {
+    const curseur = document.createElement("input");
+    curseur.type = "range";
+    curseur.min = p.min;
+    curseur.max = p.max;
+    curseur.step = p.pas ?? (entier ? 1 : (p.max - p.min) / 100);
+    curseur.value = valeur;
+    curseur.setAttribute("aria-label", p.label || p.nom);
+    const remplir = () => curseur.style.setProperty("--remplissage", `${((curseur.value - p.min) / (p.max - p.min || 1)) * 100}%`);
+    remplir();
+    curseur.addEventListener("input", () => { nombre.value = curseur.value; maj(lire(curseur.value)); remplir(); });
+    nombre.addEventListener("input", () => { curseur.value = nombre.value; remplir(); });
+    ligne.appendChild(curseur);
+  }
+  nombre.addEventListener("input", () => {
+    const v = lire(nombre.value);
+    if (Number.isFinite(v)) maj(v);
+  });
+  ligne.appendChild(nombre);
+
+  const texte = [bornes && `${p.min} … ${p.max}`, p.pas && `pas ${p.pas}`].filter(Boolean).join(" · ");
+  return { elements: [ligne], aide: texte ? { texte, mono: true } : null };
+}
+
+/** bool : case à cocher, l'étiquette est à gauche sur la même ligne. */
+function controleBool(p, valeur, maj, id) {
+  const lab = document.createElement("label");
+  lab.className = "interrupteur";
+  lab.innerHTML = `<span>${echapper(p.label || p.nom)}</span>`;
+  const c = document.createElement("input");
+  c.type = "checkbox";
+  c.id = id;
+  c.checked = !!valeur;
+  c.addEventListener("change", () => maj(c.checked));
+  lab.appendChild(c);
+  return { elements: [lab], sansEtiquette: true };
+}
+
+/** choix : boutons si 4 options courtes au plus, liste déroulante sinon. */
+function controleChoix(p, valeur, maj, id) {
+  const courts = p.options.length <= 4 && p.options.every((o) => o.length <= 14);
+  if (!courts) {
+    const s = document.createElement("select");
+    s.className = "champ champ-large";
+    s.id = id;
+    for (const o of p.options) s.add(new Option(o, o, false, o === valeur));
+    s.addEventListener("change", () => maj(s.value));
+    return { elements: [s] };
+  }
+  const groupe = document.createElement("div");
+  groupe.className = "options";
+  groupe.setAttribute("role", "radiogroup");
+  groupe.id = id;
+  let courant = valeur;
+  const activer = () => $$("button", groupe).forEach((x) => {
+    x.classList.toggle("actif", x.textContent === courant);
+    x.setAttribute("aria-checked", x.textContent === courant);
+  });
+  for (const o of p.options) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = o;
+    b.setAttribute("role", "radio");
+    b.addEventListener("click", () => { courant = o; maj(o); activer(); });
+    groupe.appendChild(b);
+  }
+  activer();
+  return { elements: [groupe] };
+}
+
+/** liste : éditeur de matrice si la taille est un carré (9, 25, 49…), champ texte sinon. */
+function controleListe(p, valeur, maj, id) {
+  const n = p.taille;
+  const cote = n ? Math.round(Math.sqrt(n)) : 0;
+  const nombres = Array.isArray(valeur) ? valeur : String(valeur).split(/[,;\s]+/).filter(Boolean).map(Number);
+
+  if (n && cote * cote === n && cote <= 9) {
+    const grille = document.createElement("div");
+    grille.className = "matrice";
+    grille.style.setProperty("--n", cote);
+    grille.id = id;
+    const cellules = [];
+    for (let i = 0; i < n; i++) {
+      const c = document.createElement("input");
+      c.type = "number";
+      c.step = "any";
+      c.required = true;
+      c.className = "champ";
+      c.value = nombres[i] ?? 0;
+      c.setAttribute("aria-label", `${p.label || p.nom} [${Math.floor(i / cote) + 1}, ${(i % cote) + 1}]`);
+      c.addEventListener("input", () => maj(cellules.map((x) => parseFloat(x.value))));
+      cellules.push(c);
+      grille.appendChild(c);
+    }
+    maj(cellules.map((x) => parseFloat(x.value)));
+    return { elements: [grille], aide: { texte: `matrice ${cote} × ${cote}`, mono: true } };
+  }
+
+  const champ = document.createElement("input");
+  champ.type = "text";
+  champ.id = id;
+  champ.className = "champ champ-large";
+  champ.value = nombres.join(", ");
+  champ.required = true;
+  champ.pattern = "\\s*-?[0-9.eE+]+(\\s*[,; ]\\s*-?[0-9.eE+]+)*\\s*";
+  champ.addEventListener("input", () => maj(champ.value));
+  return { elements: [champ], aide: { texte: `Nombres séparés par des virgules${n ? ` (${n} valeurs)` : ""}.` } };
 }
 
 // =====================================================================

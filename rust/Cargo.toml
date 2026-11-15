@@ -1,0 +1,11 @@
+[package]
+name = "traitements"
+version = "0.1.0"
+edition = "2021"
+description = "TP Traitements d'image (Rust) : un exécutable, une sous-commande par traitement"
+
+# Aucune dépendance externe : tout est écrit avec la bibliothèque standard.
+[dependencies]
+
+[profile.release]
+opt-level = 3

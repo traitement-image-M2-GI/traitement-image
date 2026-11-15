@@ -1,6 +1,6 @@
 // Affichage des résultats JSON des traitements (histogramme, profil, statistiques).
 //
-// Format attendu (voir README, section 4) :
+// Format attendu (voir DEVELOPPEMENT.md, « Sortie JSON ») :
 //   { "courbes": [{ "nom", "valeurs", "x"?, "couleur"?, "style"?: "ligne" | "barres" }],
 //     "valeurs": { "cle": valeur, ... } }
 // Toute autre clé est affichée telle quelle dans « Données brutes ».
@@ -29,8 +29,9 @@ function graduations(max, nb = 4) {
   const pasBrut = max / nb;
   const puissance = 10 ** Math.floor(Math.log10(pasBrut));
   const pas = [1, 2, 2.5, 5, 10].map((m) => m * puissance).find((p) => p >= pasBrut);
-  const res = [];
-  for (let v = 0; v <= max + pas * 1e-9; v += pas) res.push(+v.toPrecision(12));
+  // on va jusqu'à la première graduation ≥ max, pour que les courbes ne dépassent pas l'axe
+  const res = [0];
+  while (res[res.length - 1] < max - pas * 1e-9) res.push(+(res.length * pas).toPrecision(12));
   return res;
 }
 

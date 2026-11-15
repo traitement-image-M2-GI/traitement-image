@@ -32,3 +32,6 @@ stitch_atelier_traitement_d_images_web.zip
 
 # Maquettes Stitch (contiennent des photos personnelles)
 stitch_*.zip
+
+# Dossiers de travail conservés (serveur lancé avec --dossier-temp temp --garder-temp)
+/temp/
