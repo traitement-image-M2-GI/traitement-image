@@ -107,8 +107,8 @@ Le serveur et l'interface ne font aucun calcul d'image. Pour brancher un nouveau
 | Interface web | | HTML/CSS/JS | fait |
 | Entrées / sorties PGM-PPM | | Rust | fait (`rust/src/pnm.rs`) |
 | Introduction (canaux, gris, profil, quantification) | | | |
-| Statistiques et histogramme | | Rust | en cours |
-| Amélioration du contraste | | Rust | en cours (égalisation) |
+| Statistiques et histogramme | Ruhtra | Rust | en cours |
+| Amélioration du contraste | Ruhtra | Rust | en cours (égalisation) |
 | Opérations sur images | | | |
 | Interpolation | | | |
 | Convolution et filtrage spatial | | | |
