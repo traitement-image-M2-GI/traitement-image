@@ -19,3 +19,8 @@ target/
 .idea/
 *.swp
 .DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.opencode
