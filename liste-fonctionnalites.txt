@@ -1,0 +1,90 @@
+- Entrees / sorties :
+	- lecture / ecriture PGM (niveaux de gris) et PPM (couleur RGB)
+- Introduction :
+	- separer une image couleur en canaux R, G, B
+	- conversion couleur -> niveaux de gris
+	- tracer le profil d'intensite d'une image dans les deux axes (ligne / colonne)
+	- quantification spatiale (reduction de la resolution / echantillonnage)
+	- quantification des niveaux de gris (reduction du nombre de niveaux)
+- Statistiques et histogramme :
+	- histogramme (niveaux de gris et par canal couleur)
+	- histogramme normalise et cumule
+	- luminance (moyenne)
+	- contraste (ecart-type, min / max)
+	- dynamique de l'image [min, max]
+- Methodes d'amelioration du contraste (via LUT) :
+	- transformation lineaire (etirement / correction de dynamique)
+	- transformation lineaire avec saturation (Smin, Smax)
+	- transformation lineaire par morceaux
+	- transformation non lineaire (correction gamma, log, ...)
+	- egalisation de l'histogramme (globale et locale, fenetre NxN)
+- Operations sur deux images :
+	- et
+	- ou
+	- addition (saturee a 255)
+	- soustraction (bornee a 0)
+	- moyenne ponderee (a*F + b*G)
+- Operations sur une image :
+	- multiplication par un facteur (saturee a 255)
+- Changement d'echelle (interpolation) :
+	- interpolation du plus proche voisin
+	- interpolation bilineaire
+	- interpolation bicubique
+- Convolution numerique :
+	- convolution 2D avec un noyau quelconque (taille impaire)
+	- gestion des bords : mise a zero, convolution partielle, miroir
+	- normalisation par la somme des coefficients
+- Filtrage spatial :
+	- passe-bas (lissage) :
+		- moyenneur (3x3, 5x5, NxN)
+		- gaussien
+	- passe-haut (accentuation)
+	- filtres non lineaires (pas une convolution) :
+		- median
+		- min
+		- max
+	- ajout de bruit poivre et sel (pour tester les filtres)
+- Analyse spectrale d'une image :
+	- transformee de Fourier (FFT 2D, complement a zero jusqu'a une puissance de 2)
+	- partie reelle, partie imaginaire, module, phase
+	- affichage du spectre en log(1 + |F|) avec recentrage (inversion des quadrants)
+	- transformee de Fourier inverse
+- Filtrage dans le domaine spectral :
+	- passe-bas
+	- passe-haut
+	- reduction de bruit (filtre notch / coupe-bande)
+	- rehaussement de contraste (image + image filtree passe-haut)
+- Detection de contours :
+	- derivee discrete en X et en Y
+	- filtre de Roberts
+	- filtre de Prewitt
+	- filtre de Sobel
+	- norme et direction du gradient
+	- seuillage du gradient
+	- laplacien (4 voisins et 8 voisins), passages par zero
+	- transformee de Hough (detection de droites, espace (rho, theta))
+- Segmentation :
+	- seuillage simple (image binaire)
+	- multi-seuillage (n seuils -> n+1 classes)
+	- seuillage automatique d'Otsu
+	- seuillage local adaptatif (sous-images + critere de variance)
+	- k-moyennes (sur l'intensite et sur la couleur)
+	- division-fusion (split and merge, quadtree)
+	- croissance de regions (a partir de germes)
+- Images binaires :
+	- connexite 4 et 8
+	- distances D4 (Manhattan) et D8 (echiquier)
+	- codage de Freeman des contours
+	- etiquetage des composantes connexes (2 passes ou table d'equivalence)
+	- etiquetage des contours (8-connexite)
+	- amincissement des contours a 1 pixel (suppression des non-maxima)
+	- seuillage par hysteresis
+	- fermeture des contours (suivi du chemin de gradient le plus fort)
+- Morphologie mathematique (element structurant 4 ou 8 voisins) :
+	- erosion
+	- dilatation
+	- ouverture (erosion puis dilatation)
+	- fermeture (dilatation puis erosion)
+	- gradient interne (image - erodee)
+	- gradient externe (dilatee - image)
+	- gradient morphologique (dilatee - erodee)
