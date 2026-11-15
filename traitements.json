@@ -1,3 +1,28 @@
 {
-  "traitements": []
+  "traitements": [
+    {
+      "id": "histogramme",
+      "nom": "Histogramme",
+      "chapitre": "Statistiques et histogramme",
+      "description": "Histogramme des niveaux de gris, ou de chaque canal R, G, B. Donne aussi la luminance (moyenne), le contraste (écart-type) et la dynamique (min, max).",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "histogramme"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "json"
+    },
+    {
+      "id": "egalisation",
+      "nom": "Égalisation d'histogramme",
+      "chapitre": "Amélioration du contraste",
+      "description": "Aplanit l'histogramme pour utiliser toute la plage 0-255. Globale : un histogramme pour toute l'image. Locale : histogramme de la fenêtre autour de chaque pixel.",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "egalisation"],
+      "entrees": [{ "nom": "Image", "type": "gris" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "mode", "label": "Mode", "type": "choix", "options": ["globale", "locale"], "defaut": "globale" },
+        { "nom": "fenetre", "label": "Fenêtre (mode locale)", "type": "int", "min": 3, "max": 31, "pas": 2, "defaut": 7 }
+      ]
+    }
+  ]
 }

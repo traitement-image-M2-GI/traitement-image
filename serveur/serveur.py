@@ -13,7 +13,7 @@ Lancement (depuis la racine du depot) :
     python3 serveur/serveur.py
     python3 serveur/serveur.py --port 8080 --registre traitements.json
 
-Voir README.md pour l'architecture complete et le contrat des executables.
+Voir README.md pour le lancement et DEVELOPPEMENT.md pour le contrat des executables.
 """
 
 from __future__ import annotations
@@ -31,6 +31,7 @@ import sys
 import tempfile
 import threading
 import time
+from contextlib import contextmanager
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -54,6 +55,12 @@ TYPES_SORTIE = ("image", "json", "image+json")
 TYPES_PARAM = ("int", "float", "bool", "choix", "liste")
 
 log = logging.getLogger("serveur")
+
+# Options de la ligne de commande utiles a l'execution (remplies par main)
+OPTIONS = {
+    "dossier_temp": None,   # Path ou None (= dossier temporaire du systeme)
+    "garder_temp": False,   # True = ne pas supprimer les dossiers de travail
+}
 
 
 class ErreurClient(Exception):
@@ -284,6 +291,8 @@ class Registre:
             raise ValueError(f"parametre '{nom}' : 'defaut' obligatoire")
         param = dict(p)
         param.setdefault("label", nom)
+        if not isinstance(param.get("aide", ""), str):
+            raise ValueError(f"parametre '{nom}' : 'aide' doit etre un texte")
         # la valeur par defaut doit elle-meme etre valide
         try:
             param["defaut"] = convertir_param(param, p["defaut"])[0]
@@ -409,6 +418,39 @@ def decoder_image_base64(texte, nom: str) -> bytes:
         raise ErreurClient(400, f"{nom} : base64 invalide")
 
 
+@contextmanager
+def dossier_de_travail(ident: str):
+    """
+    Cree le dossier ou sont ecrits les fichiers d'entree et de sortie d'UNE requete,
+    puis le supprime a la fin (succes ou erreur).
+
+    Emplacement :
+      - par defaut, le dossier temporaire du systeme (tempfile.gettempdir()) :
+          Linux   : /tmp/ti_<id>_XXXXXXXX/
+          macOS   : /var/folders/.../T/ti_<id>_XXXXXXXX/
+          Windows : C:\\Users\\<nom>\\AppData\\Local\\Temp\\ti_<id>_XXXXXXXX\\
+      - avec --dossier-temp D : sous D (utile si le chemin du systeme pose probleme,
+        par exemple un nom d'utilisateur Windows avec des caracteres speciaux).
+    Le chemin est toujours ABSOLU, et chaque requete a son propre dossier (nom aleatoire) :
+    deux requetes simultanees ne se melangent jamais.
+
+    Avec --garder-temp, le dossier n'est pas supprime (pour inspecter les fichiers).
+    """
+    parent = OPTIONS["dossier_temp"]
+    if parent is not None:
+        parent.mkdir(parents=True, exist_ok=True)
+    dossier = Path(tempfile.mkdtemp(prefix=f"ti_{ident}_", dir=parent)).resolve()
+    try:
+        yield dossier
+    finally:
+        if OPTIONS["garder_temp"]:
+            log.info("[%s] fichiers conserves dans %s", ident, dossier)
+        else:
+            # ignore_errors : sous Windows, un antivirus peut verrouiller un fichier quelques
+            # instants ; on ne transforme pas un traitement reussi en erreur pour autant.
+            shutil.rmtree(dossier, ignore_errors=True)
+
+
 def executer(t: dict, requete: dict) -> dict:
     """Execute le traitement `t` avec les images et parametres de `requete`."""
     if not isinstance(requete, dict):
@@ -449,12 +491,11 @@ def executer(t: dict, requete: dict) -> dict:
     if executable is None:
         raise ErreurClient(
             503, f"executable introuvable pour '{t['id']}' : {t['commande'][0]}",
-            "Le traitement n'est pas encore compile. Voir la section 'Compiler' du README.",
+            "Le traitement n'est pas encore compile (voir « Démarrage rapide » dans le README).",
         )
 
-    # 4. Dossier temporaire isole par requete
-    with tempfile.TemporaryDirectory(prefix="ti_") as dossier:
-        dossier = Path(dossier)
+    # 4. Dossier de travail isole par requete (voir dossier_de_travail)
+    with dossier_de_travail(t["id"]) as dossier:
         chemins_entrees = []
         for i, (donnees, entete) in enumerate(donnees_entrees, start=1):
             chemin = dossier / f"entree{i}.{entete['format']}"
@@ -640,8 +681,15 @@ def main():
     parser.add_argument("--port", type=int, default=8000, help="port d'ecoute (defaut : 8000)")
     parser.add_argument("--registre", type=Path, default=REGISTRE_DEFAUT,
                         help="chemin du registre des traitements (defaut : traitements.json)")
+    parser.add_argument("--dossier-temp", type=Path, default=None,
+                        help="dossier ou creer les dossiers de travail (defaut : dossier temporaire du systeme)")
+    parser.add_argument("--garder-temp", action="store_true",
+                        help="ne pas supprimer les dossiers de travail (pour inspecter les fichiers echanges)")
     parser.add_argument("-v", "--verbeux", action="store_true", help="journal detaille (chaque requete HTTP)")
     args = parser.parse_args()
+
+    OPTIONS["dossier_temp"] = args.dossier_temp.resolve() if args.dossier_temp else None
+    OPTIONS["garder_temp"] = args.garder_temp
 
     logging.basicConfig(
         level=logging.DEBUG if args.verbeux else logging.INFO,
@@ -655,6 +703,8 @@ def main():
     serveur = ThreadingHTTPServer((args.hote, args.port), Gestionnaire)
     log.info("interface : http://%s:%d/", args.hote, args.port)
     log.info("registre  : %s", args.registre.resolve())
+    log.info("fichiers  : %s%s", OPTIONS["dossier_temp"] or tempfile.gettempdir(),
+             " (conserves)" if OPTIONS["garder_temp"] else "")
     try:
         serveur.serve_forever()
     except KeyboardInterrupt:
