@@ -1,0 +1,21 @@
+# C
+*.o
+*.a
+*.so
+*.out
+/c/build/
+/c/bin/
+
+# Rust
+/rust/target/
+target/
+
+# Images générées par les tests
+/output/
+*.tmp
+
+# Éditeurs / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
