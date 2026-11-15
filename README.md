@@ -85,6 +85,38 @@ flowchart LR
 - **Chaque exécutable est testable seul** dans un terminal, sans serveur ni navigateur.
 - **Isolation** : chaque requête travaille dans son propre dossier temporaire, supprimé à la fin. Plusieurs requêtes peuvent s'exécuter en parallèle.
 
+### L'interface web (`web/`)
+
+HTML, CSS et JavaScript simples, sans framework ni dépendance (seules les polices Geist / JetBrains Mono sont chargées depuis Google Fonts, avec repli sur les polices système hors connexion). Design repris de la maquette Stitch « Precision Utility ».
+
+| Fichier | Rôle |
+|---|---|
+| `index.html` | structure de la page |
+| `style.css` | design system (couleurs, typographie, composants) |
+| `app.js` | logique : registre, formulaire des paramètres, envoi au serveur, affichage, journal |
+| `pnm.js` | lecture / écriture PGM-PPM, conversions, base64 |
+| `graphique.js` | affichage des sorties JSON (courbes avec infobulle, tableau de valeurs) |
+
+Fonctionnalités :
+
+- **Menus générés depuis le registre** : chapitres, recherche, nombre d'entrées, type de sortie, langage. Un traitement non compilé est marqué « non compilé » et ne peut pas être lancé. Le registre est relu quand on revient sur l'onglet (ou avec le bouton ⟳).
+- **Formulaire des paramètres généré automatiquement** : curseur + champ pour `int`/`float` bornés, case à cocher pour `bool`, boutons ou liste déroulante pour `choix`, **éditeur de matrice** pour une `liste` de taille 9, 25, 49… (noyaux de convolution), champ texte sinon. Les bornes sont vérifiées avant l'envoi.
+- **Import d'images** : bouton ou glisser-déposer ; PNG, JPEG, WebP, BMP, GIF et aussi PGM/PPM/PBM (ASCII ou binaire, que le navigateur ne sait pas afficher seul).
+- **Conversion automatique selon le type d'entrée attendu** :
+  - `gris` : une image couleur est convertie avec la luminance UIT-R BT.601 (Y = 0,299 R + 0,587 G + 0,114 B) ;
+  - `couleur` : une image grise est recopiée dans R, G et B ;
+  - `binaire` : aucune conversion, l'interface refuse une image qui n'est pas en 0/255 et invite à faire un seuillage d'abord ;
+  - la transparence (PNG) est posée sur fond blanc.
+  Le badge de chaque image indique la conversion qui sera faite (ex. « RGB → convertie en gris »).
+- **Affichage du résultat** : image (agrandie sans flou si elle est petite), courbes et valeurs pour les sorties JSON, message d'erreur avec le `stderr` du programme en cas d'échec.
+- **Enchaînement** : boutons « Entrée A » / « Entrée B » pour réutiliser le résultat (ex. seuillage → érosion → étiquetage).
+- **Téléchargement** du résultat en PNG ou en PGM/PPM.
+- **Inspecteur de pixels** : coordonnées et valeur du pixel survolé sous chaque image.
+- **Journal** : commande exécutée, durée, `stdout`, `stderr` et erreurs des 30 dernières exécutions.
+- Raccourci **Ctrl + Entrée** pour appliquer ; disposition « Grille » ou « Empilé ».
+- **Thème clair / sombre** : suit le réglage du système par défaut ; le bouton lune/soleil de l'en-tête force l'un ou l'autre, et le choix est mémorisé dans le navigateur. Au changement, le nouveau thème apparaît dans un cercle qui grandit depuis le bouton (navigateurs récents ; bascule directe sinon, ou si le système demande de réduire les animations). Toutes les couleurs sont des variables CSS définies en tête de `style.css` (une fois pour le clair, une fois pour le sombre) : pour modifier une couleur, changez la variable, jamais une valeur en dur.
+- Si la page est ouverte sans le serveur (fichier ouvert directement), un bandeau l'indique et renvoie à la section « Démarrage rapide ».
+
 ---
 
 ## 3. Communication entre les composants
@@ -205,7 +237,7 @@ Tout ce qui n'est pas une image est renvoyé en JSON. Pour que l'interface sache
 }
 ```
 
-- `courbes` : tracées sous forme de graphique (histogramme, profil d'intensité…). `x` est facultatif (par défaut 0, 1, 2…), `couleur` aussi.
+- `courbes` : tracées sous forme de graphique (histogramme, profil d'intensité…). `x` est facultatif (par défaut 0, 1, 2…), `couleur` aussi. Ajouter `"style": "barres"` pour un tracé en barres plutôt qu'en ligne. Toutes les courbes d'un même résultat partagent le même axe : elles doivent être de la même grandeur.
 - `valeurs` : affichées sous forme de tableau clé / valeur (statistiques, seuil trouvé par Otsu…).
 
 ### Code de retour et messages
@@ -408,7 +440,7 @@ Le serveur ne plante jamais à cause d'une requête : une erreur inattendue renv
 ├── traitements.json           registre des traitements
 ├── serveur/
 │   └── serveur.py             serveur Python (bibliothèque standard uniquement)
-├── web/                       interface (HTML / CSS / JS)
+├── web/                       interface (index.html, style.css, app.js, pnm.js, graphique.js)
 ├── c/                         code C   (exécutables dans c/bin/, non versionnés)
 ├── rust/                      code Rust (exécutables dans rust/target/, non versionnés)
 └── images/                    images de test partagées (PGM / PPM)
@@ -419,7 +451,7 @@ Le serveur ne plante jamais à cause d'une requête : une erreur inattendue renv
 | Bloc | Responsable | Langage | État |
 |------|-------------|---------|------|
 | Serveur | | Python | fait |
-| Interface web | | HTML/CSS/JS | |
+| Interface web | | HTML/CSS/JS | fait |
 | Entrées / sorties PGM-PPM | | | |
 | Introduction (canaux, gris, profil, quantification) | | | |
 | Statistiques et histogramme | | | |

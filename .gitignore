@@ -24,3 +24,11 @@ target/
 __pycache__/
 *.pyc
 .opencode
+
+# Interface stitch
+stitch_atelier_traitement_d_images_web.zip
+# Outils locaux
+.playwright-mcp/
+
+# Maquettes Stitch (contiennent des photos personnelles)
+stitch_*.zip
