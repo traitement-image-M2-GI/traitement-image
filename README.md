@@ -108,11 +108,11 @@ ce qui permet de travailler tous en même temps. Si un lot a besoin d'une opéra
 | Membre | Lot | Contenu (voir [`liste-fonctionnalites.txt`](liste-fonctionnalites.txt)) |
 |--------|-----|---------|
 | Ruhtra | Bases et contraste | Introduction (canaux, gris, profil, quantification), statistiques et histogramme, amélioration du contraste (LUT, gamma, égalisation), opérations sur une ou deux images |
-| Membre 1 | Filtrage spatial | Changement d'échelle (interpolation), convolution (bords, normalisation), filtres passe-bas, passe-haut, médian, min, max, bruit poivre et sel |
-| Membre 2 | Fourier | FFT 2D et inverse, réel / imaginaire / module / phase, spectre recentré, filtrage spectral (passe-bas, passe-haut, coupe-bande, rehaussement) |
-| Membre 3 | Contours | Dérivées, Roberts, Prewitt, Sobel, gradient (norme, direction, seuillage), laplacien, Hough, amincissement, seuillage par hystérésis, fermeture des contours |
-| Membre 4 | Segmentation | Seuillage simple et multiple, Otsu, seuillage local adaptatif, k-moyennes, division-fusion, croissance de régions |
-| Membre 5 | Binaire et morphologie | Connexité, distances D4 / D8, codage de Freeman, étiquetage des composantes et des contours, érosion, dilatation, ouverture, fermeture, gradients morphologiques |
+| Naomi | Filtrage spatial | Changement d'échelle (interpolation), convolution (bords, normalisation), filtres passe-bas, passe-haut, médian, min, max, bruit poivre et sel |
+| Evrad | Fourier | FFT 2D et inverse, réel / imaginaire / module / phase, spectre recentré, filtrage spectral (passe-bas, passe-haut, coupe-bande, rehaussement) |
+| Cinthia | Contours | Dérivées, Roberts, Prewitt, Sobel, gradient (norme, direction, seuillage), laplacien, Hough, amincissement, seuillage par hystérésis, fermeture des contours |
+| Léandre | Segmentation | Seuillage simple et multiple, Otsu, seuillage local adaptatif, k-moyennes, division-fusion, croissance de régions |
+| Cabrelle | Binaire et morphologie | Connexité, distances D4 / D8, codage de Freeman, étiquetage des composantes et des contours, érosion, dilatation, ouverture, fermeture, gradients morphologiques |
 
 | Bloc | Responsable | Langage | État |
 |------|-------------|---------|------|
@@ -123,13 +123,13 @@ ce qui permet de travailler tous en même temps. Si un lot a besoin d'une opéra
 | Statistiques et histogramme | Ruhtra | Rust | en cours |
 | Amélioration du contraste | Ruhtra | Rust | en cours (égalisation) |
 | Opérations sur images | Ruhtra | | |
-| Interpolation | Membre 1 | | |
-| Convolution et filtrage spatial | Membre 1 | | |
-| Fourier et filtrage spectral | Membre 2 | | |
-| Détection de contours | Membre 3 | | |
-| Segmentation | Membre 4 | | |
-| Images binaires | Membre 5 | | |
-| Morphologie mathématique | Membre 5 | | |
+| Interpolation | Naomi | | |
+| Convolution et filtrage spatial | Naomi | | |
+| Fourier et filtrage spectral | Evrad | | |
+| Détection de contours | Cinthia| | |
+| Segmentation | Léandre | | |
+| Images binaires | Cabrelle | | |
+| Morphologie mathématique | Cabrelle| | |
 
 Chacun remplace « Membre n » par son nom et indique son langage en commençant.
 
