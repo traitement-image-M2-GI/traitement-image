@@ -101,22 +101,37 @@ Le serveur et l'interface ne font aucun calcul d'image. Pour brancher un nouveau
 
 ## Répartition du travail
 
+Le groupe compte 6 membres. Chaque lot est **indépendant** : il ne dépend du code d'aucun autre lot,
+ce qui permet de travailler tous en même temps. Si un lot a besoin d'une opération d'un autre lot
+(convolution, soustraction, seuillage…), il la réécrit dans son propre code.
+
+| Membre | Lot | Contenu (voir [`liste-fonctionnalites.txt`](liste-fonctionnalites.txt)) |
+|--------|-----|---------|
+| Ruhtra | Bases et contraste | Introduction (canaux, gris, profil, quantification), statistiques et histogramme, amélioration du contraste (LUT, gamma, égalisation), opérations sur une ou deux images |
+| Membre 1 | Filtrage spatial | Changement d'échelle (interpolation), convolution (bords, normalisation), filtres passe-bas, passe-haut, médian, min, max, bruit poivre et sel |
+| Membre 2 | Fourier | FFT 2D et inverse, réel / imaginaire / module / phase, spectre recentré, filtrage spectral (passe-bas, passe-haut, coupe-bande, rehaussement) |
+| Membre 3 | Contours | Dérivées, Roberts, Prewitt, Sobel, gradient (norme, direction, seuillage), laplacien, Hough, amincissement, seuillage par hystérésis, fermeture des contours |
+| Membre 4 | Segmentation | Seuillage simple et multiple, Otsu, seuillage local adaptatif, k-moyennes, division-fusion, croissance de régions |
+| Membre 5 | Binaire et morphologie | Connexité, distances D4 / D8, codage de Freeman, étiquetage des composantes et des contours, érosion, dilatation, ouverture, fermeture, gradients morphologiques |
+
 | Bloc | Responsable | Langage | État |
 |------|-------------|---------|------|
-| Serveur | | Python | fait |
-| Interface web | | HTML/CSS/JS | fait |
-| Entrées / sorties PGM-PPM | | Rust | fait (`rust/src/pnm.rs`) |
-| Introduction (canaux, gris, profil, quantification) | | | |
+| Serveur | Ruhtra | Python | fait |
+| Interface web | Ruhtra | HTML/CSS/JS | fait |
+| Entrées / sorties PGM-PPM | Ruhtra | Rust | fait (`rust/src/pnm.rs`) |
+| Introduction (canaux, gris, profil, quantification) | Ruhtra | | |
 | Statistiques et histogramme | Ruhtra | Rust | en cours |
 | Amélioration du contraste | Ruhtra | Rust | en cours (égalisation) |
-| Opérations sur images | | | |
-| Interpolation | | | |
-| Convolution et filtrage spatial | | | |
-| Fourier et filtrage spectral | | | |
-| Détection de contours | | | |
-| Segmentation | | | |
-| Images binaires | | | |
-| Morphologie mathématique | | | |
+| Opérations sur images | Ruhtra | | |
+| Interpolation | Membre 1 | | |
+| Convolution et filtrage spatial | Membre 1 | | |
+| Fourier et filtrage spectral | Membre 2 | | |
+| Détection de contours | Membre 3 | | |
+| Segmentation | Membre 4 | | |
+| Images binaires | Membre 5 | | |
+| Morphologie mathématique | Membre 5 | | |
+
+Chacun remplace « Membre n » par son nom et indique son langage en commençant.
 
 ---
 
