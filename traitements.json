@@ -23,6 +23,107 @@
         { "nom": "mode", "label": "Mode", "type": "choix", "options": ["globale", "locale"], "defaut": "globale" },
         { "nom": "fenetre", "label": "Fenêtre (mode locale)", "type": "int", "min": 3, "max": 31, "pas": 2, "defaut": 7 }
       ]
+    },
+    {
+      "id": "seuillage",
+      "nom": "Seuillage simple",
+      "chapitre": "Segmentation",
+      "description": "Binarise l'image : les pixels dont la valeur est au moins le seuil deviennent blancs (255), les autres noirs (0). Une image couleur est d'abord convertie en niveaux de gris.",
+      "auteur": "Léandre",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "seuillage"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "seuil", "label": "Seuil", "type": "int", "min": 0, "max": 255, "pas": 1, "defaut": 127 }
+      ]
+    },
+    {
+      "id": "multiseuillage",
+      "nom": "Multi-seuillage",
+      "chapitre": "Segmentation",
+      "description": "Découpe l'image en n+1 classes à partir de n seuils. Chaque classe reçoit une valeur de gris distincte (0, 85, 170, 255 pour trois seuils).",
+      "auteur": "Léandre",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "multiseuillage"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "seuils", "label": "Seuils", "type": "liste", "taille": 3, "defaut": "64,128,192", "aide": "Trois seuils ; ils sont triés automatiquement." }
+      ]
+    },
+    {
+      "id": "otsu",
+      "nom": "Seuillage d'Otsu",
+      "chapitre": "Segmentation",
+      "description": "Choisit automatiquement le seuil qui maximise la variance inter-classes, puis binarise l'image. Le seuil retenu est affiché dans le tableau de valeurs.",
+      "auteur": "Léandre",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "otsu"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image+json"
+    },
+    {
+      "id": "seuillage-local",
+      "nom": "Seuillage local adaptatif",
+      "chapitre": "Segmentation",
+      "description": "Calcule le seuil autour de chaque pixel dans une fenêtre NxN (moyenne locale, éventuellement corrigée par l'écart-type) puis binarise l'image.",
+      "auteur": "Léandre",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "seuillage-local"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "fenetre", "label": "Fenêtre", "type": "int", "min": 3, "max": 31, "pas": 2, "defaut": 15 },
+        { "nom": "constante", "label": "Constante", "type": "float", "min": -50, "max": 50, "pas": 0.5, "defaut": 0 },
+        { "nom": "poids_variance", "label": "Poids de la variance", "type": "float", "min": -5, "max": 5, "pas": 0.1, "defaut": 0 }
+      ]
+    },
+    {
+      "id": "kmeans",
+      "nom": "K-moyennes",
+      "chapitre": "Segmentation",
+      "description": "Regroupe les pixels en k classes (sur l'intensité pour une image grise, sur RVB pour une image couleur). Initialisation déterministe ; les centroïdes sont affichés en sortie.",
+      "auteur": "Léandre",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "kmeans"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image+json",
+      "params": [
+        { "nom": "k", "label": "Nombre de classes", "type": "int", "min": 2, "max": 16, "pas": 1, "defaut": 3 },
+        { "nom": "iterations", "label": "Itérations maximum", "type": "int", "min": 1, "max": 100, "pas": 1, "defaut": 30 }
+      ]
+    },
+    {
+      "id": "division-fusion",
+      "nom": "Division-fusion",
+      "chapitre": "Segmentation",
+      "description": "Segmentation par quadtree : divise l'image jusqu'à obtenir des régions homogènes, puis fusionne les régions voisines de moyenne proche. Chaque région est remplacée par sa moyenne.",
+      "auteur": "Léandre",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "division-fusion"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "ecart_max", "label": "Écart maximal", "type": "int", "min": 0, "max": 255, "pas": 1, "defaut": 20 },
+        { "nom": "taille_min", "label": "Taille minimale", "type": "int", "min": 1, "max": 32, "pas": 1, "defaut": 2 }
+      ]
+    },
+    {
+      "id": "croissance",
+      "nom": "Croissance de régions",
+      "chapitre": "Segmentation",
+      "description": "À partir de germes, étend chaque région aux pixels voisins dont la valeur diffère de celle du germe d'au plus la tolérance. La sortie est une image d'étiquettes.",
+      "auteur": "Léandre",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "croissance"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image+json",
+      "params": [
+        { "nom": "germes", "label": "Germes (x,y)", "type": "liste", "taille": 4, "defaut": "1,1,2,2", "aide": "Deux germes sous la forme x1,y1,x2,y2 (grille 2 × 2)." },
+        { "nom": "tol", "label": "Tolérance", "type": "int", "min": 0, "max": 128, "pas": 1, "defaut": 15 },
+        { "nom": "connexite", "label": "Connexité", "type": "choix", "options": ["4", "8"], "defaut": "8" }
+      ]
     }
   ]
 }

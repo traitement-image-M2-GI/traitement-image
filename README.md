@@ -127,7 +127,7 @@ ce qui permet de travailler tous en même temps. Si un lot a besoin d'une opéra
 | Convolution et filtrage spatial | Naomi | | |
 | Fourier et filtrage spectral | Evrad | | |
 | Détection de contours | Cinthia| | |
-| Segmentation | Léandre | | |
+| Segmentation | Léandre | Rust | fait |
 | Images binaires | Cabrelle | | |
 | Morphologie mathématique | Cabrelle| | |
 
