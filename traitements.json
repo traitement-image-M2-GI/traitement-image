@@ -23,6 +23,80 @@
         { "nom": "mode", "label": "Mode", "type": "choix", "options": ["globale", "locale"], "defaut": "globale" },
         { "nom": "fenetre", "label": "Fenêtre (mode locale)", "type": "int", "min": 3, "max": 31, "pas": 2, "defaut": 7 }
       ]
+    },
+    {
+      "id": "distances",
+      "nom": "Cartes de distance D4 / D8",
+      "chapitre": "Images binaires",
+      "description": "Distance discrète entre le germe (x, y) et chaque pixel objet : D4 de Manhattan (losange) ou D8 de l'échiquier (carré). Le fond reste noir, les distances sont ramenées dans 0-255.",
+      "auteur": "Cabrelle",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "distances"],
+      "entrees": [{ "nom": "Image binaire", "type": "binaire" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "methode", "label": "Distance", "type": "choix", "options": ["D4", "D8"], "defaut": "D4" },
+        { "nom": "x", "label": "Germe x", "type": "int", "min": 0, "max": 10000, "pas": 1, "defaut": 0, "aide": "Colonne du germe, depuis le bord gauche." },
+        { "nom": "y", "label": "Germe y", "type": "int", "min": 0, "max": 10000, "pas": 1, "defaut": 0, "aide": "Ligne du germe, depuis le bord haut." }
+      ],
+      "timeout": 30
+    },
+    {
+      "id": "morphologie",
+      "nom": "Morphologie mathématique",
+      "chapitre": "Morphologie mathématique",
+      "description": "Élément structurant à 4 voisins (croix) ou 8 voisins (carré 3x3). Érosion, dilatation, ouverture (érosion puis dilatation), fermeture (dilatation puis érosion) et les trois gradients morphologiques. Pixels hors image considérés comme du fond.",
+      "auteur": "Cabrelle",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "morphologie"],
+      "entrees": [{ "nom": "Image binaire", "type": "binaire" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "operation", "label": "Opération", "type": "choix", "options": ["erosion", "dilatation", "ouverture", "fermeture", "gradient_interne", "gradient_externe", "gradient_morphologique"], "defaut": "erosion" },
+        { "nom": "element", "label": "Élément structurant", "type": "choix", "options": ["4", "8"], "defaut": "8", "aide": "4 = croix (régions), 8 = carré 3x3." }
+      ],
+      "timeout": 30
+    },
+    {
+      "id": "etiquetage",
+      "nom": "Étiquetage des composantes connexes",
+      "chapitre": "Images binaires",
+      "description": "Parcours en deux passes avec table d'équivalence : chaque composante reçoit une étiquette unique et une couleur distincte (le fond reste noir). Le JSON donne le nombre de composantes et la taille de chacune. Connexité 4 pour les régions, 8 si souhaité.",
+      "auteur": "Cabrelle",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "etiquetage"],
+      "entrees": [{ "nom": "Image binaire", "type": "binaire" }],
+      "sortie": "image+json",
+      "params": [
+        { "nom": "connexite", "label": "Connexité", "type": "choix", "options": ["4", "8"], "defaut": "4", "aide": "4 = régions (recommandé), 8 = les diagonales aussi." }
+      ],
+      "timeout": 30
+    },
+    {
+      "id": "freeman",
+      "nom": "Codage de Freeman",
+      "chapitre": "Images binaires",
+      "description": "Suit le contour du premier pixel objet en tournant dans le sens horaire et renvoie la chaîne des codes de direction (8 directions en connexité-8). Sort l'image du contour et un JSON avec la chaîne, le point de départ et le nombre de pas.",
+      "auteur": "Cabrelle",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "freeman"],
+      "entrees": [{ "nom": "Image binaire", "type": "binaire" }],
+      "sortie": "image+json",
+      "params": [
+        { "nom": "connexite", "label": "Connexité", "type": "choix", "options": ["4", "8"], "defaut": "8", "aide": "8 = contour (recommandé), 4 = codes 0-3." }
+      ],
+      "timeout": 30
+    },
+    {
+      "id": "etiquetage-contours",
+      "nom": "Étiquetage des contours",
+      "chapitre": "Images binaires",
+      "description": "Même algorithme en deux passes que l'étiquetage des composantes, mais en 8-connexité (4 voisins déjà vus au lieu de 2) : les contours qui se touchent par un coin sont donc réunis. Chaque contour reçoit une couleur distincte, le fond reste noir. Le JSON donne le nombre de contours et la taille de chacun. Le cours recommande des contours d'un pixel d'épaisseur.",
+      "auteur": "Cabrelle",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "etiquetage-contours"],
+      "entrees": [{ "nom": "Image binaire", "type": "binaire" }],
+      "sortie": "image+json"
     }
   ]
 }

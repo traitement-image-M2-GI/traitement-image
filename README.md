@@ -128,8 +128,8 @@ ce qui permet de travailler tous en même temps. Si un lot a besoin d'une opéra
 | Fourier et filtrage spectral | Evrad | | |
 | Détection de contours | Cinthia| | |
 | Segmentation | Léandre | | |
-| Images binaires | Cabrelle | | |
-| Morphologie mathématique | Cabrelle| | |
+| Images binaires | Cabrelle | Rust | en cours (reste étiquetage des contours) |
+| Morphologie mathématique | Cabrelle | Rust | fait |
 
 Chacun remplace « Membre n » par son nom et indique son langage en commençant.
 

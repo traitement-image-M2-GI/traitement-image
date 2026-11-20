@@ -14,8 +14,11 @@
 //!   3. le déclarer dans `traitements.json` avec
 //!      "commande": ["rust/target/release/traitements", "<sous-commande>"]
 
+mod binaire;
 mod egalisation;
+mod freeman;
 mod histogramme;
+mod morphologie;
 mod pnm;
 
 use std::error::Error;
@@ -28,6 +31,11 @@ pub type Resultat = Result<(), Box<dyn Error>>;
 const TRAITEMENTS: &[(&str, fn(&[String]) -> Resultat, &str)] = &[
     ("histogramme", histogramme::executer, "<entrée.pgm|ppm> <sortie.json>"),
     ("egalisation", egalisation::executer, "<entrée.pgm> <sortie.pgm> <globale|locale> <fenêtre>"),
+    ("distances", binaire::executer_distances, "<entrée.pgm> <sortie.pgm> <D4|D8> <germe x> <germe y>"),
+    ("etiquetage", binaire::executer_etiquetage, "<entrée.pgm> <sortie.ppm> <sortie.json> <4|8>"),
+    ("etiquetage-contours", binaire::executer_etiquetage_contours, "<entrée.pgm> <sortie.ppm> <sortie.json>"),
+    ("freeman", freeman::executer, "<entrée.pgm> <sortie.pgm> <sortie.json> <4|8>"),
+    ("morphologie", morphologie::executer, "<entrée.pgm> <sortie.pgm> <erosion|dilatation|ouverture|fermeture|gradient_interne|gradient_externe|gradient_morphologique> <4|8>"),
 ];
 
 fn main() -> ExitCode {
