@@ -69,6 +69,18 @@ impl Connexite {
         }
     }
 
+    /// Tous les voisins de la connexité (utilisés pour parcourir une composante entière).
+    pub fn voisins(self) -> &'static [(i64, i64)] {
+        match self {
+            Connexite::Quatre => &[(0, -1), (-1, 0), (1, 0), (0, 1)],
+            Connexite::Huit => &[
+                (-1, -1), (0, -1), (1, -1),
+                (-1, 0),           (1, 0),
+                (-1, 1),  (0, 1),  (1, 1),
+            ],
+        }
+    }
+
     /// Codes de Freeman (diapo 8) dans l'ordre de recherche horaire.
     /// En 8-connexité : 0 = Est, 1 = Sud-Est, 2 = Sud, … 7 = Nord-Est.
     /// En 4-connexité, les codes du cours sont 0 = Est, 1 = Nord, 2 = Ouest, 3 = Sud,

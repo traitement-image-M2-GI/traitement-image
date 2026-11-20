@@ -76,7 +76,7 @@
       "id": "freeman",
       "nom": "Codage de Freeman",
       "chapitre": "Images binaires",
-      "description": "Suit le contour du premier pixel objet en tournant dans le sens horaire et renvoie la chaîne des codes de direction (8 directions en connexité-8). Sort l'image du contour et un JSON avec la chaîne, le point de départ et le nombre de pas.",
+      "description": "Suit tous les contours de l'image (un par composante), en partant du pixel en haut à gauche et en tournant dans le sens horaire : codes 0-7 en connexité-8, 0-3 en connexité-4. En 8-connexité, le critère d'arrêt de Jacob évite de couper une branche ou une boucle secondaire. Sort l'image des contours et un JSON avec, pour chaque contour, son point de départ, sa chaîne de codes et son nombre de pas.",
       "auteur": "Cabrelle",
       "langage": "Rust",
       "commande": ["rust/target/release/traitements", "freeman"],
