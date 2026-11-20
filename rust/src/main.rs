@@ -15,11 +15,19 @@
 //!      "commande": ["rust/target/release/traitements", "<sous-commande>"]
 
 mod binaire;
+mod croissance;
+mod division_fusion;
 mod egalisation;
 mod freeman;
+mod gris;
 mod histogramme;
+mod kmeans;
 mod morphologie;
+mod multiseuillage;
+mod otsu;
 mod pnm;
+mod seuillage;
+mod seuillage_local;
 
 use std::error::Error;
 use std::process::ExitCode;
@@ -36,6 +44,13 @@ const TRAITEMENTS: &[(&str, fn(&[String]) -> Resultat, &str)] = &[
     ("etiquetage-contours", binaire::executer_etiquetage_contours, "<entrée.pgm> <sortie.ppm> <sortie.json>"),
     ("freeman", freeman::executer, "<entrée.pgm> <sortie.pgm> <sortie.json> <4|8>"),
     ("morphologie", morphologie::executer, "<entrée.pgm> <sortie.pgm> <erosion|dilatation|ouverture|fermeture|gradient_interne|gradient_externe|gradient_morphologique> <4|8>"),
+    ("seuillage", seuillage::executer, "<entrée> <sortie.pnm> <seuil>"),
+    ("multiseuillage", multiseuillage::executer, "<entrée> <sortie.pnm> <seuils>"),
+    ("otsu", otsu::executer, "<entrée> <sortie.pnm> <sortie.json>"),
+    ("seuillage-local", seuillage_local::executer, "<entrée> <sortie.pnm> <fenêtre> <constante> <poids_variance>"),
+    ("kmeans", kmeans::executer, "<entrée> <sortie.pnm> <sortie.json> <k> <iterations>"),
+    ("division-fusion", division_fusion::executer, "<entrée> <sortie.pnm> <ecart_max> <taille_min>"),
+    ("croissance", croissance::executer, "<entrée> <sortie.pnm> <sortie.json> <germes> <tolérance> <connexité>"),
 ];
 
 fn main() -> ExitCode {

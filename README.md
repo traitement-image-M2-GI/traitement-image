@@ -127,8 +127,8 @@ ce qui permet de travailler tous en même temps. Si un lot a besoin d'une opéra
 | Convolution et filtrage spatial | Naomi | | |
 | Fourier et filtrage spectral | Evrad | | |
 | Détection de contours | Cinthia| | |
-| Segmentation | Léandre | | |
-| Images binaires | Cabrelle | Rust | en cours (reste étiquetage des contours) |
+| Segmentation | Léandre | Rust | fait |
+| Images binaires | Cabrelle | Rust | fait |
 | Morphologie mathématique | Cabrelle | Rust | fait |
 
 Chacun remplace « Membre n » par son nom et indique son langage en commençant.
