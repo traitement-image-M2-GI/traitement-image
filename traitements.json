@@ -23,6 +23,92 @@
         { "nom": "mode", "label": "Mode", "type": "choix", "options": ["globale", "locale"], "defaut": "globale" },
         { "nom": "fenetre", "label": "Fenêtre (mode locale)", "type": "int", "min": 3, "max": 31, "pas": 2, "defaut": 7 }
       ]
+    },
+    {
+      "id": "fft",
+      "nom": "Transformée de Fourier (FFT 2D)",
+      "chapitre": "Analyse spectrale",
+      "description": "FFT 2D de l'image, complétée par des zéros jusqu'à une puissance de 2. Affiche le module en log(1 + |F|) (le spectre), la phase, la partie réelle ou la partie imaginaire. Le résultat a la taille complétée ; recentré, la fréquence nulle est au centre.",
+      "auteur": "Evrad",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "fft"],
+      "entrees": [{ "nom": "Image", "type": "gris" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "composante", "label": "Composante affichée", "type": "choix", "options": ["module", "phase", "reelle", "imaginaire"], "defaut": "module" },
+        { "nom": "recentrer", "label": "Recentrer le spectre", "type": "bool", "defaut": true,
+          "aide": "Inversion des quadrants : la fréquence (0, 0) passe au centre de l'image." }
+      ]
+    },
+    {
+      "id": "fft-inverse",
+      "nom": "Transformée de Fourier inverse",
+      "chapitre": "Analyse spectrale",
+      "description": "FFT de l'image puis FFT inverse, en gardant tout le spectre (on retrouve l'image), seulement sa phase (module mis à 1 : les contours restent visibles) ou seulement son module (phase mise à 0).",
+      "auteur": "Evrad",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "fft-inverse"],
+      "entrees": [{ "nom": "Image", "type": "gris" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "reconstruction", "label": "Spectre utilisé", "type": "choix", "options": ["complete", "phase", "module"], "defaut": "complete" }
+      ]
+    },
+    {
+      "id": "filtre-spectral",
+      "nom": "Filtre passe-bas / passe-haut spectral",
+      "chapitre": "Filtrage spectral",
+      "description": "Multiplie le spectre par un gabarit H centré sur la fréquence nulle, puis revient à l'image par FFT inverse. Passe-bas : lissage. Passe-haut : détails seuls (résultat normalisé).",
+      "auteur": "Evrad",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "filtre-spectral"],
+      "entrees": [{ "nom": "Image", "type": "gris" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "type", "label": "Type", "type": "choix", "options": ["passe-bas", "passe-haut"], "defaut": "passe-bas" },
+        { "nom": "forme", "label": "Forme du gabarit", "type": "choix", "options": ["ideal", "butterworth", "gaussien"], "defaut": "gaussien",
+          "aide": "Idéal : coupure franche (oscillations). Butterworth et gaussien : transition douce." },
+        { "nom": "coupure", "label": "Fréquence de coupure D0", "type": "int", "min": 1, "max": 2048, "pas": 1, "defaut": 30,
+          "aide": "Rayon en pixels sur le spectre recentré." },
+        { "nom": "ordre", "label": "Ordre (Butterworth)", "type": "int", "min": 1, "max": 10, "pas": 1, "defaut": 2 }
+      ]
+    },
+    {
+      "id": "coupe-bande",
+      "nom": "Réduction de bruit (notch / coupe-bande)",
+      "chapitre": "Filtrage spectral",
+      "description": "Supprime un bruit périodique en annulant le spectre autour de ses pics. Points : deux disques en (u, v) et (-u, -v). Anneau : tout l'anneau de rayon donné autour du centre.",
+      "auteur": "Evrad",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "coupe-bande"],
+      "entrees": [{ "nom": "Image", "type": "gris" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "mode", "label": "Zone supprimée", "type": "choix", "options": ["points", "anneau"], "defaut": "points" },
+        { "nom": "largeur", "label": "Largeur", "type": "int", "min": 1, "max": 512, "pas": 1, "defaut": 5,
+          "aide": "Diamètre des disques (points) ou épaisseur de l'anneau, en pixels du spectre." },
+        { "nom": "u", "label": "u (mode points)", "type": "int", "min": -2048, "max": 2048, "pas": 1, "defaut": 16,
+          "aide": "Position du pic sur le spectre recentré (traitement FFT) : u = x - largeur/2, v = y - hauteur/2." },
+        { "nom": "v", "label": "v (mode points)", "type": "int", "min": -2048, "max": 2048, "pas": 1, "defaut": 0 },
+        { "nom": "rayon", "label": "Rayon (mode anneau)", "type": "int", "min": 0, "max": 2048, "pas": 1, "defaut": 30 }
+      ]
+    },
+    {
+      "id": "rehaussement-spectral",
+      "nom": "Rehaussement de contraste spectral",
+      "chapitre": "Filtrage spectral",
+      "description": "Image + k × image filtrée passe-haut, calculé dans le domaine spectral : G = F · (1 + k · H_passe-haut). Accentue les détails en gardant les zones uniformes.",
+      "auteur": "Evrad",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "rehaussement-spectral"],
+      "entrees": [{ "nom": "Image", "type": "gris" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "forme", "label": "Forme du passe-haut", "type": "choix", "options": ["ideal", "butterworth", "gaussien"], "defaut": "gaussien" },
+        { "nom": "coupure", "label": "Fréquence de coupure D0", "type": "int", "min": 1, "max": 2048, "pas": 1, "defaut": 30 },
+        { "nom": "ordre", "label": "Ordre (Butterworth)", "type": "int", "min": 1, "max": 10, "pas": 1, "defaut": 2 },
+        { "nom": "k", "label": "Coefficient k", "type": "float", "min": 0, "max": 5, "pas": 0.1, "defaut": 1.0 }
+      ]
     }
   ]
 }

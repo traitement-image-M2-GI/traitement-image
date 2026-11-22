@@ -125,7 +125,7 @@ ce qui permet de travailler tous en même temps. Si un lot a besoin d'une opéra
 | Opérations sur images | Ruhtra | | |
 | Interpolation | Naomi | | |
 | Convolution et filtrage spatial | Naomi | | |
-| Fourier et filtrage spectral | Evrad | | |
+| Fourier et filtrage spectral | Evrad | Rust | fait (`fft`, `fft-inverse`, `filtre-spectral`, `coupe-bande`, `rehaussement-spectral`) |
 | Détection de contours | Cinthia| | |
 | Segmentation | Léandre | | |
 | Images binaires | Cabrelle | | |

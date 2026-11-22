@@ -14,9 +14,15 @@
 //!   3. le déclarer dans `traitements.json` avec
 //!      "commande": ["rust/target/release/traitements", "<sous-commande>"]
 
+mod coupe_bande;
 mod egalisation;
+mod fft;
+mod fft_inverse;
+mod filtre_spectral;
+mod fourier;
 mod histogramme;
 mod pnm;
+mod rehaussement;
 
 use std::error::Error;
 use std::process::ExitCode;
@@ -28,6 +34,19 @@ pub type Resultat = Result<(), Box<dyn Error>>;
 const TRAITEMENTS: &[(&str, fn(&[String]) -> Resultat, &str)] = &[
     ("histogramme", histogramme::executer, "<entrée.pgm|ppm> <sortie.json>"),
     ("egalisation", egalisation::executer, "<entrée.pgm> <sortie.pgm> <globale|locale> <fenêtre>"),
+    ("fft", fft::executer, "<entrée.pgm> <sortie.pgm> <module|phase|reelle|imaginaire> <recentrer 1|0>"),
+    ("fft-inverse", fft_inverse::executer, "<entrée.pgm> <sortie.pgm> <complete|phase|module>"),
+    (
+        "filtre-spectral",
+        filtre_spectral::executer,
+        "<entrée.pgm> <sortie.pgm> <passe-bas|passe-haut> <ideal|butterworth|gaussien> <coupure> <ordre>",
+    ),
+    ("coupe-bande", coupe_bande::executer, "<entrée.pgm> <sortie.pgm> <points|anneau> <largeur> <u> <v> <rayon>"),
+    (
+        "rehaussement-spectral",
+        rehaussement::executer,
+        "<entrée.pgm> <sortie.pgm> <ideal|butterworth|gaussien> <coupure> <ordre> <k>",
+    ),
 ];
 
 fn main() -> ExitCode {
