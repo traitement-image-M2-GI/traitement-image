@@ -14,11 +14,14 @@
 //!   3. le déclarer dans `traitements.json` avec
 //!      "commande": ["rust/target/release/traitements", "<sous-commande>"]
 
+mod convolution;
 mod croissance;
 mod division_fusion;
 mod egalisation;
+mod filtrage;
 mod gris;
 mod histogramme;
+mod interpolation;
 mod kmeans;
 mod multiseuillage;
 mod otsu;
@@ -43,6 +46,16 @@ const TRAITEMENTS: &[(&str, fn(&[String]) -> Resultat, &str)] = &[
     ("kmeans", kmeans::executer, "<entrée> <sortie.pnm> <sortie.json> <k> <iterations>"),
     ("division-fusion", division_fusion::executer, "<entrée> <sortie.pnm> <ecart_max> <taille_min>"),
     ("croissance", croissance::executer, "<entrée> <sortie.pnm> <sortie.json> <germes> <tolérance> <connexité>"),
+    // Lot « Filtrage spatial » (Naomi)
+    ("interpolation", interpolation::executer, "<entrée> <sortie> <plus-proche-voisin|bilineaire|bicubique> <facteur>"),
+    ("convolution", convolution::executer, "<entrée> <sortie> <noyau a,b,c,...> <zero|partielle|miroir> <normaliser 1|0>"),
+    ("moyenneur", filtrage::executer_moyenneur, "<entrée> <sortie> <taille> <zero|partielle|miroir>"),
+    ("gaussien", filtrage::executer_gaussien, "<entrée> <sortie> <sigma> <zero|partielle|miroir>"),
+    ("passe-haut", filtrage::executer_passe_haut, "<entrée> <sortie> <4|8> <zero|partielle|miroir>"),
+    ("median", filtrage::executer_median, "<entrée> <sortie> <taille>"),
+    ("minimum", filtrage::executer_min, "<entrée> <sortie> <taille>"),
+    ("maximum", filtrage::executer_max, "<entrée> <sortie> <taille>"),
+    ("poivre-et-sel", filtrage::executer_poivre_et_sel, "<entrée> <sortie> <proportion 0..1> <graine>"),
 ];
 
 fn main() -> ExitCode {

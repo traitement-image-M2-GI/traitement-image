@@ -124,6 +124,139 @@
         { "nom": "tol", "label": "Tolérance", "type": "int", "min": 0, "max": 128, "pas": 1, "defaut": 15 },
         { "nom": "connexite", "label": "Connexité", "type": "choix", "options": ["4", "8"], "defaut": "8" }
       ]
+    },
+    {
+      "id": "interpolation",
+      "nom": "Changement d'échelle (interpolation)",
+      "chapitre": "Changement d'échelle",
+      "description": "Agrandit ou réduit l'image d'un facteur. Plus proche voisin : effet d'escalier ; bilinéaire : 4 voisins, plus lisse ; bicubique : 16 voisins, plus net.",
+      "auteur": "Naomi",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "interpolation"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "methode", "label": "Méthode", "type": "choix", "options": ["plus-proche-voisin", "bilineaire", "bicubique"], "defaut": "bilineaire" },
+        { "nom": "facteur", "label": "Facteur", "type": "float", "min": 0.1, "max": 8, "pas": 0.1, "defaut": 2.0, "aide": "Supérieur à 1 : agrandissement ; inférieur à 1 : réduction." }
+      ]
+    },
+    {
+      "id": "convolution",
+      "nom": "Convolution 2D",
+      "chapitre": "Convolution et filtrage spatial",
+      "description": "Convolution par un noyau quelconque de taille impaire, avec choix de la gestion des bords et normalisation par la somme des coefficients.",
+      "auteur": "Naomi",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "convolution"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "noyau", "label": "Noyau 3x3", "type": "liste", "taille": 9, "defaut": "1,2,1,2,4,2,1,2,1" },
+        { "nom": "bords", "label": "Bords", "type": "choix", "options": ["zero", "partielle", "miroir"], "defaut": "miroir", "aide": "zero : hors image = 0 ; partielle : seuls les coefficients dans l'image ; miroir : image prolongée par symétrie." },
+        { "nom": "normaliser", "label": "Normaliser par la somme des coefficients", "type": "bool", "defaut": true }
+      ]
+    },
+    {
+      "id": "moyenneur",
+      "nom": "Filtre moyenneur",
+      "chapitre": "Convolution et filtrage spatial",
+      "description": "Passe-bas : chaque pixel prend la moyenne de la fenêtre NxN. Lisse l'image et atténue le bruit, mais rend les contours flous.",
+      "auteur": "Naomi",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "moyenneur"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "taille", "label": "Taille de la fenêtre", "type": "int", "min": 3, "max": 15, "pas": 2, "defaut": 3},
+        { "nom": "bords", "label": "Bords", "type": "choix", "options": ["zero", "partielle", "miroir"], "defaut": "miroir", "aide": "zero : hors image = 0 ; partielle : seuls les coefficients dans l'image ; miroir : image prolongée par symétrie." }
+      ]
+    },
+    {
+      "id": "gaussien",
+      "nom": "Filtre gaussien",
+      "chapitre": "Convolution et filtrage spatial",
+      "description": "Passe-bas : moyenne pondérée par une gaussienne d'écart-type sigma (noyau de taille 2×⌈3σ⌉+1). Lisse plus naturellement que le moyenneur.",
+      "auteur": "Naomi",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "gaussien"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "sigma", "label": "Sigma", "type": "float", "min": 0.3, "max": 5, "pas": 0.1, "defaut": 1.0},
+        { "nom": "bords", "label": "Bords", "type": "choix", "options": ["zero", "partielle", "miroir"], "defaut": "miroir", "aide": "zero : hors image = 0 ; partielle : seuls les coefficients dans l'image ; miroir : image prolongée par symétrie." }
+      ]
+    },
+    {
+      "id": "passe-haut",
+      "nom": "Filtre passe-haut (accentuation)",
+      "chapitre": "Convolution et filtrage spatial",
+      "description": "Accentue les détails et les contours : image moins son laplacien (noyau 0,-1,0 / -1,5,-1 / 0,-1,0 en 4 voisins ; centre 9 entouré de -1 en 8 voisins).",
+      "auteur": "Naomi",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "passe-haut"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "voisinage", "label": "Voisinage", "type": "choix", "options": ["4", "8"], "defaut": "4" },
+        { "nom": "bords", "label": "Bords", "type": "choix", "options": ["zero", "partielle", "miroir"], "defaut": "miroir", "aide": "zero : hors image = 0 ; partielle : seuls les coefficients dans l'image ; miroir : image prolongée par symétrie." }
+      ]
+    },
+    {
+      "id": "median",
+      "nom": "Filtre médian",
+      "chapitre": "Convolution et filtrage spatial",
+      "description": "Non linéaire : chaque pixel prend la valeur médiane de la fenêtre NxN. Supprime le bruit poivre et sel en préservant les contours.",
+      "auteur": "Naomi",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "median"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "taille", "label": "Taille de la fenêtre", "type": "int", "min": 3, "max": 15, "pas": 2, "defaut": 3 }
+      ]
+    },
+    {
+      "id": "minimum",
+      "nom": "Filtre min",
+      "chapitre": "Convolution et filtrage spatial",
+      "description": "Non linéaire : chaque pixel prend la plus petite valeur de la fenêtre NxN (assombrit, élimine le bruit « sel »).",
+      "auteur": "Naomi",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "minimum"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "taille", "label": "Taille de la fenêtre", "type": "int", "min": 3, "max": 15, "pas": 2, "defaut": 3 }
+      ]
+    },
+    {
+      "id": "maximum",
+      "nom": "Filtre max",
+      "chapitre": "Convolution et filtrage spatial",
+      "description": "Non linéaire : chaque pixel prend la plus grande valeur de la fenêtre NxN (éclaircit, élimine le bruit « poivre »).",
+      "auteur": "Naomi",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "maximum"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "taille", "label": "Taille de la fenêtre", "type": "int", "min": 3, "max": 15, "pas": 2, "defaut": 3 }
+      ]
+    },
+    {
+      "id": "poivre-et-sel",
+      "nom": "Bruit poivre et sel",
+      "chapitre": "Convolution et filtrage spatial",
+      "description": "Ajoute du bruit impulsionnel : une proportion des pixels devient noire ou blanche. Sert à tester les filtres (médian, min, max).",
+      "auteur": "Naomi",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "poivre-et-sel"],
+      "entrees": [{ "nom": "Image", "type": "tous" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "proportion", "label": "Proportion de pixels bruités", "type": "float", "min": 0, "max": 1, "pas": 0.01, "defaut": 0.05},
+        { "nom": "graine", "label": "Graine", "type": "int", "min": 0, "max": 9999, "pas": 1, "defaut": 1, "aide": "Même graine : même bruit." }
+      ]
     }
   ]
 }
