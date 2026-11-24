@@ -14,10 +14,15 @@
 //!   3. le déclarer dans `traitements.json` avec
 //!      "commande": ["rust/target/release/traitements", "<sous-commande>"]
 
+mod coupe_bande;
 mod convolution;
 mod croissance;
 mod division_fusion;
 mod egalisation;
+mod fft;
+mod fft_inverse;
+mod filtre_spectral;
+mod fourier;
 mod filtrage;
 mod gris;
 mod histogramme;
@@ -26,6 +31,7 @@ mod kmeans;
 mod multiseuillage;
 mod otsu;
 mod pnm;
+mod rehaussement;
 mod seuillage;
 mod seuillage_local;
 
@@ -56,6 +62,19 @@ const TRAITEMENTS: &[(&str, fn(&[String]) -> Resultat, &str)] = &[
     ("minimum", filtrage::executer_min, "<entrée> <sortie> <taille>"),
     ("maximum", filtrage::executer_max, "<entrée> <sortie> <taille>"),
     ("poivre-et-sel", filtrage::executer_poivre_et_sel, "<entrée> <sortie> <proportion 0..1> <graine>"),
+    ("fft", fft::executer, "<entrée.pgm> <sortie.pgm> <module|phase|reelle|imaginaire> <recentrer 1|0>"),
+    ("fft-inverse", fft_inverse::executer, "<entrée.pgm> <sortie.pgm> <complete|phase|module>"),
+    (
+        "filtre-spectral",
+        filtre_spectral::executer,
+        "<entrée.pgm> <sortie.pgm> <passe-bas|passe-haut> <ideal|butterworth|gaussien> <coupure> <ordre>",
+    ),
+    ("coupe-bande", coupe_bande::executer, "<entrée.pgm> <sortie.pgm> <points|anneau> <largeur> <u> <v> <rayon>"),
+    (
+        "rehaussement-spectral",
+        rehaussement::executer,
+        "<entrée.pgm> <sortie.pgm> <ideal|butterworth|gaussien> <coupure> <ordre> <k>",
+    ),
 ];
 
 fn main() -> ExitCode {
