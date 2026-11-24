@@ -126,7 +126,7 @@ ce qui permet de travailler tous en même temps. Si un lot a besoin d'une opéra
 | Interpolation | Naomi | Rust | fait (`interpolation.rs` : plus proche voisin, bilinéaire, bicubique) |
 | Convolution et filtrage spatial | Naomi | Rust | fait (`convolution.rs`, `filtrage.rs` : convolution, moyenneur, gaussien, passe-haut, médian, min, max, poivre et sel) |
 | Fourier et filtrage spectral | Evrad | | |
-| Détection de contours | Cinthia| | |
+| Détection de contours | Cinthia | Rust | fait (`contours.rs` : dérivées, Roberts, Prewitt, Sobel, gradient, laplacien, Hough, amincissement, hystérésis, fermeture des contours) |
 | Segmentation | Léandre | | |
 | Images binaires | Cabrelle | | |
 | Morphologie mathématique | Cabrelle| | |

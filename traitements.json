@@ -156,6 +156,111 @@
         { "nom": "proportion", "label": "Proportion de pixels bruités", "type": "float", "min": 0, "max": 1, "pas": 0.01, "defaut": 0.05},
         { "nom": "graine", "label": "Graine", "type": "int", "min": 0, "max": 9999, "pas": 1, "defaut": 1, "aide": "Même graine : même bruit." }
       ]
+    },
+    {
+      "id": "derivee",
+      "nom": "Dérivée discrète (X ou Y)",
+      "chapitre": "Détection de contours",
+      "description": "Différence entre un pixel et son voisin de droite (X) ou du dessous (Y). Les contours verticaux apparaissent en X, les horizontaux en Y. Affiche la valeur absolue.",
+      "auteur": "Cinthia",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "derivee"],
+      "entrees": [{ "nom": "Image", "type": "gris" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "axe", "label": "Axe", "type": "choix", "options": ["x", "y"], "defaut": "x" }
+      ]
+    },
+    {
+      "id": "gradient",
+      "nom": "Gradient (Roberts, Prewitt, Sobel)",
+      "chapitre": "Détection de contours",
+      "description": "Mesure la force du changement de luminosité autour de chaque pixel. Norme : force du contour ; direction : angle du gradient ; seuillage : garde les contours dont la norme atteint le seuil.",
+      "auteur": "Cinthia",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "gradient"],
+      "entrees": [{ "nom": "Image", "type": "gris" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "operateur", "label": "Opérateur", "type": "choix", "options": ["roberts", "prewitt", "sobel"], "defaut": "sobel" },
+        { "nom": "affichage", "label": "Affichage", "type": "choix", "options": ["norme", "gx", "gy", "direction", "seuillage"], "defaut": "norme" },
+        { "nom": "seuil", "label": "Seuil (mode seuillage)", "type": "int", "min": 0, "max": 255, "pas": 1, "defaut": 60, "aide": "Utilisé seulement avec l'affichage « seuillage »." }
+      ]
+    },
+    {
+      "id": "laplacien",
+      "nom": "Laplacien et passages par zéro",
+      "chapitre": "Détection de contours",
+      "description": "Dérivée seconde de l'image. Les contours se trouvent là où le laplacien change de signe (passages par zéro). Très sensible au bruit : lisser l'image avant.",
+      "auteur": "Cinthia",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "laplacien"],
+      "entrees": [{ "nom": "Image", "type": "gris" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "voisinage", "label": "Voisinage", "type": "choix", "options": ["4", "8"], "defaut": "4" },
+        { "nom": "affichage", "label": "Affichage", "type": "choix", "options": ["laplacien", "passages-zero"], "defaut": "laplacien" },
+        { "nom": "seuil", "label": "Seuil (passages par zéro)", "type": "int", "min": 0, "max": 255, "pas": 1, "defaut": 100, "aide": "Saut minimal, en proportion du plus grand laplacien, pour qu'un changement de signe compte. Trop bas : beaucoup de points parasites (bruit)." }
+      ]
+    },
+    {
+      "id": "hough",
+      "nom": "Transformée de Hough (droites)",
+      "chapitre": "Détection de contours",
+      "description": "Détecte les droites d'une image de contours. Chaque pixel de contour vote pour toutes les droites qui passent par lui ; les droites sont les pics de l'espace (θ en abscisse, ρ en ordonnée). Donne aussi les droites les plus votées.",
+      "auteur": "Cinthia",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "hough"],
+      "entrees": [{ "nom": "Contours", "type": "gris" }],
+      "sortie": "image+json",
+      "params": [
+        { "nom": "seuil", "label": "Seuil de contour", "type": "int", "min": 1, "max": 255, "pas": 1, "defaut": 128, "aide": "Les pixels de l'entrée dont la valeur atteint ce seuil sont des points de contour." },
+        { "nom": "nb_droites", "label": "Nombre de droites", "type": "int", "min": 1, "max": 20, "pas": 1, "defaut": 5 }
+      ]
+    },
+    {
+      "id": "amincissement",
+      "nom": "Amincissement des contours",
+      "chapitre": "Détection de contours",
+      "description": "Réduit les contours épais à 1 pixel : on ne garde que les pixels dont la norme du gradient est maximale dans la direction du gradient (suppression des non-maxima).",
+      "auteur": "Cinthia",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "amincissement"],
+      "entrees": [{ "nom": "Image", "type": "gris" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "operateur", "label": "Opérateur", "type": "choix", "options": ["sobel", "prewitt"], "defaut": "sobel" }
+      ]
+    },
+    {
+      "id": "hysteresis",
+      "nom": "Seuillage par hystérésis",
+      "chapitre": "Détection de contours",
+      "description": "Deux seuils : un pixel au-dessus du seuil haut est un contour sûr ; un pixel entre les deux n'est gardé que s'il est relié à un contour sûr. À appliquer sur une image de force de contour (norme du gradient, ou résultat de l'amincissement).",
+      "auteur": "Cinthia",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "hysteresis"],
+      "entrees": [{ "nom": "Force du contour", "type": "gris" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "bas", "label": "Seuil bas", "type": "int", "min": 0, "max": 255, "pas": 1, "defaut": 40 },
+        { "nom": "haut", "label": "Seuil haut", "type": "int", "min": 0, "max": 255, "pas": 1, "defaut": 100, "aide": "Doit être supérieur ou égal au seuil bas." }
+      ]
+    },
+    {
+      "id": "fermeture-contours",
+      "nom": "Fermeture des contours",
+      "chapitre": "Détection de contours",
+      "description": "Prolonge les contours interrompus : depuis chaque extrémité, on suit le chemin de plus fort gradient jusqu'à rejoindre un autre contour. Entrées : les contours (binaire, par exemple après l'hystérésis) et la force du gradient.",
+      "auteur": "Cinthia",
+      "langage": "Rust",
+      "commande": ["rust/target/release/traitements", "fermeture-contours"],
+      "entrees": [{ "nom": "Contours", "type": "binaire" },{ "nom": "Force du gradient", "type": "gris" }],
+      "sortie": "image",
+      "params": [
+        { "nom": "seuil", "label": "Force minimale", "type": "int", "min": 0, "max": 255, "pas": 1, "defaut": 20, "aide": "Le chemin s'arrête s'il passe sous cette force de gradient." },
+        { "nom": "longueur", "label": "Longueur maximale", "type": "int", "min": 1, "max": 200, "pas": 1, "defaut": 30, "aide": "Nombre maximal de pixels ajoutés pour fermer un trou." }
+      ]
     }
   ]
 }

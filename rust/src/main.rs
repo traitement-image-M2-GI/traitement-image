@@ -14,6 +14,7 @@
 //!   3. le déclarer dans `traitements.json` avec
 //!      "commande": ["rust/target/release/traitements", "<sous-commande>"]
 
+mod contours;
 mod convolution;
 mod egalisation;
 mod filtrage;
@@ -41,6 +42,14 @@ const TRAITEMENTS: &[(&str, fn(&[String]) -> Resultat, &str)] = &[
     ("minimum", filtrage::executer_min, "<entrée> <sortie> <taille>"),
     ("maximum", filtrage::executer_max, "<entrée> <sortie> <taille>"),
     ("poivre-et-sel", filtrage::executer_poivre_et_sel, "<entrée> <sortie> <proportion 0..1> <graine>"),
+    // Lot « Contours » (Cinthia)
+    ("derivee", contours::executer_derivee, "<entrée> <sortie> <x|y>"),
+    ("gradient", contours::executer_gradient, "<entrée> <sortie> <roberts|prewitt|sobel> <norme|gx|gy|direction|seuillage> <seuil 0..255>"),
+    ("laplacien", contours::executer_laplacien, "<entrée> <sortie> <4|8> <laplacien|passages-zero> <seuil 0..255>"),
+    ("hough", contours::executer_hough, "<entrée> <sortie.pgm> <sortie.json> <seuil 1..255> <nombre de droites>"),
+    ("amincissement", contours::executer_amincissement, "<entrée> <sortie> <sobel|prewitt>"),
+    ("hysteresis", contours::executer_hysteresis, "<entrée> <sortie> <seuil bas> <seuil haut>"),
+    ("fermeture-contours", contours::executer_fermeture, "<contours> <force> <sortie> <seuil 0..255> <longueur max>"),
 ];
 
 fn main() -> ExitCode {
