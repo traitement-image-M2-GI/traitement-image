@@ -14,8 +14,11 @@
 //!   3. le déclarer dans `traitements.json` avec
 //!      "commande": ["rust/target/release/traitements", "<sous-commande>"]
 
+mod convolution;
 mod egalisation;
+mod filtrage;
 mod histogramme;
+mod interpolation;
 mod pnm;
 
 use std::error::Error;
@@ -28,6 +31,16 @@ pub type Resultat = Result<(), Box<dyn Error>>;
 const TRAITEMENTS: &[(&str, fn(&[String]) -> Resultat, &str)] = &[
     ("histogramme", histogramme::executer, "<entrée.pgm|ppm> <sortie.json>"),
     ("egalisation", egalisation::executer, "<entrée.pgm> <sortie.pgm> <globale|locale> <fenêtre>"),
+    // Lot « Filtrage spatial » (Naomi)
+    ("interpolation", interpolation::executer, "<entrée> <sortie> <plus-proche-voisin|bilineaire|bicubique> <facteur>"),
+    ("convolution", convolution::executer, "<entrée> <sortie> <noyau a,b,c,...> <zero|partielle|miroir> <normaliser 1|0>"),
+    ("moyenneur", filtrage::executer_moyenneur, "<entrée> <sortie> <taille> <zero|partielle|miroir>"),
+    ("gaussien", filtrage::executer_gaussien, "<entrée> <sortie> <sigma> <zero|partielle|miroir>"),
+    ("passe-haut", filtrage::executer_passe_haut, "<entrée> <sortie> <4|8> <zero|partielle|miroir>"),
+    ("median", filtrage::executer_median, "<entrée> <sortie> <taille>"),
+    ("minimum", filtrage::executer_min, "<entrée> <sortie> <taille>"),
+    ("maximum", filtrage::executer_max, "<entrée> <sortie> <taille>"),
+    ("poivre-et-sel", filtrage::executer_poivre_et_sel, "<entrée> <sortie> <proportion 0..1> <graine>"),
 ];
 
 fn main() -> ExitCode {
